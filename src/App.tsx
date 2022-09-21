@@ -37,7 +37,7 @@ function App() {
     },)
 
     const messageAnchorBlockRef = useRef<HTMLDivElement>(null)
-    console.log(typingUsersList)
+
     return (
         <div className="App">
             <div>
