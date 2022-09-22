@@ -10,26 +10,29 @@ export const createConnection= createAsyncThunk("chat/createConnection",(param,A
         (message)=>{
             APIThunk.dispatch(chatSlice.actions.removeTypingUser({id: message.user.id}))
             APIThunk.dispatch(chatSlice.actions.newMessagesReceived(message))
-
         },
         (user)=>{
             APIThunk.dispatch(chatSlice.actions.addTypingUser({id: user.id}))
+        },
+        user => {
+            APIThunk.dispatch(chatSlice.actions.removeTypingUser({id: user.id}))
         }
     )
 })
-export const setClientName=createAsyncThunk("chat/setClientName",(name:string,ApiThunk)=>{
+export const setClientName=createAsyncThunk("chat/setClientName",(name:string)=>{
     Api.sendName(name)
-
 })
-export const fetchMessage=createAsyncThunk("chat/fetchMessage",(message:string,ApiThunk)=>{
+export const fetchMessage=createAsyncThunk("chat/fetchMessage",(message:string)=>{
 Api.sendMessage(message)
 })
-
-export const destroyConnection= createAsyncThunk("chat/destroyConnection",(param,APIThunk)=>{
+export const destroyConnection= createAsyncThunk("chat/destroyConnection",()=>{
 Api.destroyConnection()
 })
-export const fetchTypingSignal=createAsyncThunk("chat/fetchTypingSignal",(param,ApiThunk)=>{
+export const fetchTypingSignal=createAsyncThunk("chat/fetchTypingSignal",()=>{
     Api.sendTypingSignal()
+})
+export const fetchNotTypingSignal=createAsyncThunk("chat/fetchNotTypingSignal",()=>{
+    Api.sendNotTypingSignal()
 })
 
 export type MessagesEntity = {
@@ -55,10 +58,5 @@ export const chatSlice=createSlice({
         removeTypingUser:(state,action:PayloadAction<{ id:string }>)=>{
           delete  state.typingUsersList[action.payload.id]
         }
-
-    },
-    extraReducers:(builder => {
-        builder.addCase(createConnection.fulfilled,(state,action)=>{
-        })
-    })
+    }
 })

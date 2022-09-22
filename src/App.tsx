@@ -1,23 +1,23 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {ChangeEvent, ChangeEventHandler, useEffect, useRef, useState} from 'react';
 import './App.css';
-import {io} from "socket.io-client";
 import {useDispatch, useSelector} from "react-redux";
 import {AppDispatchType, AppRootStateType} from "./Store/Store";
 import {
-    chatSlice,
     createConnection,
     destroyConnection,
-    fetchMessage,
+    fetchMessage, fetchNotTypingSignal,
     fetchTypingSignal,
     setClientName
 } from "./Store/ChatSlice";
+import {useDebouncedEffect} from "./CustomHooks/CustomHooks";
 
 
 function App() {
-    const [message, setMessage] = useState("h")
+    const [message, setMessage] = useState("")
     const [name, setName] = useState("")
     const [isAutoScroll, setIsAutoScroll] = useState(true)
     const [lastScrollTop, setLastScrollTop] = useState(0)
+    const [isTyping,setIsTyping]=useState(false)
 
     const messages = useSelector((state: AppRootStateType) => state.chat.messages)
     const typingUsersList = useSelector((state: AppRootStateType) => state.chat.typingUsersList)
@@ -30,13 +30,30 @@ function App() {
             dispatch(destroyConnection())
         }
     }, [])
+
     useEffect(() => {
         if (isAutoScroll) {
             messageAnchorBlockRef.current?.scrollIntoView({behavior: "smooth"})
         }
     },)
-
     const messageAnchorBlockRef = useRef<HTMLDivElement>(null)
+
+    const notTyping=()=>{
+        console.log("not typing")
+        dispatch(fetchNotTypingSignal())
+        setIsTyping(false)
+    }
+
+    useDebouncedEffect(notTyping,[message],1000)
+
+    const onChangeText = (event:ChangeEvent<HTMLTextAreaElement>) => {
+        if(!isTyping){
+            console.log("typing")
+            dispatch(fetchTypingSignal())
+            setIsTyping(true)
+        }
+        setMessage(event.currentTarget.value)
+    };
 
     return (
         <div className="App">
@@ -72,13 +89,10 @@ function App() {
                     dispatch(setClientName(name))
                 }}>send name
                 </button>
-                <textarea value={message} onChange={event => {
-                    dispatch(fetchTypingSignal())
-                    setMessage(event.currentTarget.value)
-                }}/>
+                <textarea value={message} onChange={onChangeText}/>
                 <button onClick={() => {
                     dispatch(fetchMessage(message))
-
+                    dispatch(fetchNotTypingSignal())
                     setMessage("")
                 }}>send
                 </button>

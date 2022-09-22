@@ -17,11 +17,13 @@ export const Api={
     subscribe(
         initMessagesHandler:(messages:MessagesEntity[])=>void,
         newMessageSentHandler:(message:MessagesEntity)=>void,
-        getTypingUser:(user:{id:string,name:string})=>void
+        getTypingUser:(user:{id:string,name:string})=>void,
+        getNotTypingUser:(user:{id:string,name:string})=>void,
     ){
         this.socket?.on('init-messages-published', initMessagesHandler)
         this.socket?.on('new-message-sent', newMessageSentHandler)
         this.socket?.on("user-typing",getTypingUser)
+        this.socket?.on('user-not-typing',getNotTypingUser)
     },
     sendName(name:string){
         this.socket?.emit('client-name-sent', name)
@@ -31,6 +33,9 @@ export const Api={
     },
     sendTypingSignal(){
         this.socket?.emit("client-typing")
+    },
+    sendNotTypingSignal(){
+        this.socket?.emit("client-not-typing")
     },
     destroyConnection(){
         this.socket?.disconnect()
